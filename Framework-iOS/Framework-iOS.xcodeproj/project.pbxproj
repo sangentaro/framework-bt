@@ -40,9 +40,12 @@
 		60ED4221136C5C2D00F3D3ED /* Framework_iOSAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 60ED4210136C5C2D00F3D3ED /* Framework_iOSAppDelegate.m */; };
 		60ED4222136C5C2D00F3D3ED /* Framework_iOSViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 60ED4212136C5C2D00F3D3ED /* Framework_iOSViewController.m */; };
 		60ED4224136C5C2D00F3D3ED /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 60ED4216136C5C2D00F3D3ED /* main.m */; };
-		F678DF4617927A520050F052 /* RMbt.m in Sources */ = {isa = PBXBuildFile; fileRef = F678DF4517927A520050F052 /* RMbt.m */; };
-		F678DF4717927A6A0050F052 /* RMbt.h in Headers */ = {isa = PBXBuildFile; fileRef = F678DF4417927A520050F052 /* RMbt.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		F678DF4817927A970050F052 /* RMbt.m in Sources */ = {isa = PBXBuildFile; fileRef = F678DF4517927A520050F052 /* RMbt.m */; };
+		F6989DF117AFE36800213D83 /* RMBTPeripheral.m in Sources */ = {isa = PBXBuildFile; fileRef = F6989DF017AFE36800213D83 /* RMBTPeripheral.m */; };
+		F6989DF217AFE37500213D83 /* RMBTPeripheral.h in Headers */ = {isa = PBXBuildFile; fileRef = F6989DEF17AFE36800213D83 /* RMBTPeripheral.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F6989DF317AFE37A00213D83 /* RMBTPeripheral.m in Sources */ = {isa = PBXBuildFile; fileRef = F6989DF017AFE36800213D83 /* RMBTPeripheral.m */; };
+		F6989DF617AFE3EA00213D83 /* RMBTCentral.m in Sources */ = {isa = PBXBuildFile; fileRef = F6989DF517AFE3EA00213D83 /* RMBTCentral.m */; };
+		F6989DF717AFEA7200213D83 /* RMBTCentral.m in Sources */ = {isa = PBXBuildFile; fileRef = F6989DF517AFE3EA00213D83 /* RMBTCentral.m */; };
+		F6989DF817AFEA7700213D83 /* RMBTCentral.h in Headers */ = {isa = PBXBuildFile; fileRef = F6989DF417AFE3EA00213D83 /* RMBTCentral.h */; settings = {ATTRIBUTES = (Public, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -73,8 +76,10 @@
 		60ED4216136C5C2D00F3D3ED /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		60ED4233136C5F3000F3D3ED /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		60ED42A7136C6A4900F3D3ED /* BTKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BTKit.h; sourceTree = "<group>"; };
-		F678DF4417927A520050F052 /* RMbt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RMbt.h; sourceTree = "<group>"; };
-		F678DF4517927A520050F052 /* RMbt.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RMbt.m; sourceTree = "<group>"; };
+		F6989DEF17AFE36800213D83 /* RMBTPeripheral.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RMBTPeripheral.h; sourceTree = "<group>"; };
+		F6989DF017AFE36800213D83 /* RMBTPeripheral.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RMBTPeripheral.m; sourceTree = "<group>"; };
+		F6989DF417AFE3EA00213D83 /* RMBTCentral.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RMBTCentral.h; sourceTree = "<group>"; };
+		F6989DF517AFE3EA00213D83 /* RMBTCentral.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RMBTCentral.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -200,8 +205,10 @@
 			isa = PBXGroup;
 			children = (
 				60ED42A7136C6A4900F3D3ED /* BTKit.h */,
-				F678DF4417927A520050F052 /* RMbt.h */,
-				F678DF4517927A520050F052 /* RMbt.m */,
+				F6989DEF17AFE36800213D83 /* RMBTPeripheral.h */,
+				F6989DF017AFE36800213D83 /* RMBTPeripheral.m */,
+				F6989DF417AFE3EA00213D83 /* RMBTCentral.h */,
+				F6989DF517AFE3EA00213D83 /* RMBTCentral.m */,
 			);
 			path = Source;
 			sourceTree = "<group>";
@@ -214,7 +221,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				60EA0AAC13CB1FD700A0F61F /* BTKit.h in Headers */,
-				F678DF4717927A6A0050F052 /* RMbt.h in Headers */,
+				F6989DF217AFE37500213D83 /* RMBTPeripheral.h in Headers */,
+				F6989DF817AFEA7700213D83 /* RMBTCentral.h in Headers */,
 				60EA0ABA13CB206800A0F61F /* FI-Prefix.pch in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -333,7 +341,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F678DF4817927A970050F052 /* RMbt.m in Sources */,
+				F6989DF317AFE37A00213D83 /* RMBTPeripheral.m in Sources */,
+				F6989DF717AFEA7200213D83 /* RMBTCentral.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -344,7 +353,8 @@
 				60ED4221136C5C2D00F3D3ED /* Framework_iOSAppDelegate.m in Sources */,
 				60ED4222136C5C2D00F3D3ED /* Framework_iOSViewController.m in Sources */,
 				60ED4224136C5C2D00F3D3ED /* main.m in Sources */,
-				F678DF4617927A520050F052 /* RMbt.m in Sources */,
+				F6989DF117AFE36800213D83 /* RMBTPeripheral.m in Sources */,
+				F6989DF617AFE3EA00213D83 /* RMBTCentral.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

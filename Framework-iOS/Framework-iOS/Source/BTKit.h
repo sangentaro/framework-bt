@@ -5,4 +5,5 @@
  *	Copyright ramuh. All rights reserved.
  */
 
-#import <BTKit/RMbt.h>
+#import <BTKit/RMBTPeripheral.h>
+#import <BTKit/RMBTCentral.h>

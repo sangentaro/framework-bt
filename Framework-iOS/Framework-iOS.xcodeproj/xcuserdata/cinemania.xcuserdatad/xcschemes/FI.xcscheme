@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "60EA0A9E13CB1FBC00A0F61F"
-               BuildableName = "XlKit.framework"
+               BuildableName = "BTKit.framework"
                BlueprintName = "BTKit"
                ReferencedContainer = "container:Framework-iOS.xcodeproj">
             </BuildableReference>
