@@ -13,7 +13,7 @@
 @required
 - (void)foo;
 @optional
-- (void)bar;
+- (void)logCentral:(NSString*)logText;
 @end
 
 @interface RMBTCentral : NSObject<CBCentralManagerDelegate, CBPeripheralDelegate>

@@ -13,7 +13,7 @@
 @required
 - (void)foo;
 @optional
-- (void)bar;
+- (void)logCentral:(NSString*)logText;
 @end
 
 @interface RMBTCentral : NSObject<CBCentralManagerDelegate, CBPeripheralDelegate>
@@ -21,7 +21,8 @@
 @property (nonatomic, strong) id<RMBTCentralDelegate> delegate;
 @property (nonatomic, strong) CBCentralManager *cManager;
 @property (nonatomic, strong) CBPeripheral *peripheral;
+@property (nonatomic, strong) NSString *idCentral;
 
-- (id) initWithDelegate:(id<RMBTCentralDelegate>)delegate;
+- (id) initWithDelegate:(id<RMBTCentralDelegate>)delegate centralId:(NSString*)centralId;
 
 @end

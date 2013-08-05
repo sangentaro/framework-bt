@@ -38,6 +38,8 @@
 }
 
 - (void)centralManagerDidUpdateState:(CBCentralManager *)central {
+    NSString *log = [[[NSString alloc]initWithFormat:@"CENTRAL: start cnetral"]autorelease];
+    [self logCat:log];
     switch (central.state) {
         case CBCentralManagerStatePoweredOn:
             // Scans for any peripheral
@@ -70,7 +72,8 @@
     if([services containsObject:[CBUUID UUIDWithString:SERVICE_UUID1]]){
         /* Peripheral is in foreground */
         // serviceUUIDs has UUID that service advertizes
-        NSLog(@"iOS in foreground discovered:%@, peripheral.UUID:%@, localName:%@", advertisementData, peripheral.UUID, localName);
+        NSString *log = [[[NSString alloc]initWithFormat:@"CENTRAL: iOS in foreground discovered:%@, peripheral.UUID:%@, localName:%@", advertisementData, peripheral.UUID, localName]autorelease];
+        [self logCat:log];
         
         // stop scan
         //[self.cManager stopScan];
@@ -81,7 +84,8 @@
         [self.cManager connectPeripheral:self.peripheral options:nil];
         
     }else{
-        NSLog(@"unknown service found %@", advertisementData);
+        NSString *log = [[[NSString alloc]initWithFormat:@"CENTRAL: unknown service found %@", advertisementData]autorelease];
+        [self logCat:log];
     }
 }
 
@@ -94,9 +98,12 @@
 - (void) peripheral:(CBPeripheral *)peripheral didDiscoverServices:(NSError *)error
 {
     NSArray *services = peripheral.services;
-    NSLog(@"services count:%d, %@", [services count], error);
+    NSString *log = [[[NSString alloc]initWithFormat:@"CENTRAL: services count:%d, %@", [services count], error]autorelease];
+    [self logCat:log];
+    
     for (CBService *service in services){
-        NSLog(@"Service found with UUID: %@", service.UUID);
+        NSString *log = [[[NSString alloc]initWithFormat:@"CENTRAL: Service found with UUID: %@", service.UUID]autorelease];
+        [self logCat:log];
         [peripheral discoverCharacteristics:nil forService:service];
     }
 }
@@ -106,10 +113,12 @@
     // Set Notify
     for(CBCharacteristic *characteristic in service.characteristics){
         if(characteristic.properties &(CBCharacteristicPropertyNotify | CBCharacteristicPropertyIndicateEncryptionRequired)){
-            NSLog(@"subscribe to service:%@, characteristic:%@", service.UUID, characteristic.UUID);
+            NSString *log = [[[NSString alloc]initWithFormat:@"CENTRAL: subscribe to service:%@, characteristic:%@", service.UUID, characteristic.UUID]autorelease];
+            [self logCat:log];
             [peripheral setNotifyValue:YES forCharacteristic:characteristic];
         }else{
-            NSLog(@"characteristics Discovered.Service:%@, Characteristic:%@", service.UUID, characteristic.UUID);
+            NSString *log = [[[NSString alloc]initWithFormat:@"CENTRAL: characteristics Discovered.Service:%@, Characteristic:%@", service.UUID, characteristic.UUID]autorelease];
+            [self logCat:log];
         }
     }
 }
@@ -118,10 +127,19 @@
 - (void) peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error
 {
     NSString *receivedString = [[[NSString alloc] initWithData:characteristic.value encoding:NSUTF8StringEncoding]autorelease];
-    NSLog(@"UpdateValue.Service:%@, Characteristic:%@, request value%@",
-          characteristic.service.UUID,
-          characteristic.UUID,
-          receivedString);
+    NSString *log = [[[NSString alloc]initWithFormat:@"CENTRAL: UpdateValue.Service:%@, Characteristic:%@, request value%@",
+                      characteristic.service.UUID,
+                      characteristic.UUID,
+                      receivedString]autorelease];
+    [self logCat:log];
 }
+
+#pragma mark for development
+- (void) logCat:(NSString*)logText
+{
+    NSLog(@"%@", logText);
+    [self.delegate logCentral:logText];
+}
+
 
 @end

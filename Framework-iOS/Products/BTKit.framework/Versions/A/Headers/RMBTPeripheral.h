@@ -13,7 +13,7 @@
 @required
 - (void)foo;
 @optional
-- (void)bar;
+- (void)logPeripheral:(NSString*)logText;
 @end
 
 @interface RMBTPeripheral : NSObject<CBPeripheralManagerDelegate>
@@ -22,8 +22,9 @@
 @property (nonatomic, strong) CBPeripheralManager *pManager;
 @property (nonatomic, strong) CBMutableService *service_01;
 @property (nonatomic, strong) CBMutableCharacteristic *characteristic_01;
+@property (nonatomic, strong) NSString *idPeripheral;
 
-- (id) initWithDelegate:(id<RMBTPeripheralDelegate>)delegate;
+- (id) initWithDelegate:(id<RMBTPeripheralDelegate>)delegate peripheralId:(NSString*)peripheralId;
 - (void) notifyData:(NSData*)data;
 
 @end

@@ -13,7 +13,7 @@
 @required
 - (void)foo;
 @optional
-- (void)bar;
+- (void)logPeripheral:(NSString*)logText;
 @end
 
 @interface RMBTPeripheral : NSObject<CBPeripheralManagerDelegate>

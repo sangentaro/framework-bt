@@ -15,6 +15,7 @@
 
 @synthesize idPeripheral;
 
+#pragma mark life cycle
 - (void) dealloc
 {
     self.delegate = nil;
@@ -27,6 +28,7 @@
     [super dealloc];
 }
 
+#pragma mark public methods
 - (id) initWithDelegate:(id<RMBTPeripheralDelegate>)delegate peripheralId:(NSString*)peripheralId
 {
     self = [super init];
@@ -40,13 +42,22 @@
     return self;
 }
 
+- (void) notifyData:(NSData*)data
+{
+    // Send data to central
+    BOOL result = [self.pManager updateValue:data
+                           forCharacteristic:self.characteristic_01
+                        onSubscribedCentrals:nil];
+    NSString *log = [[[NSString alloc]initWithFormat:@"PERIPHERAL: notify data:%@, result:%d", data, result]autorelease];
+    [self logCat:log];
+}
+
 - (void)peripheralManagerDidUpdateState:(CBPeripheralManager *)peripheral {
     switch (peripheral.state) {
         case CBPeripheralManagerStatePoweredOn:
             [self startAdvertize];
             break;
         default:
-            NSLog(@"Peripheral Manager did change state");
             break;
     }
 }
@@ -84,19 +95,15 @@
     
     // Start advertizement
     [self.pManager startAdvertising:advertiseDict];
-    NSLog(@"start advertize, %@", advertiseDict);
+    NSString *log = [[[NSString alloc]initWithFormat:@"PERIPHERAL: start advertize:%@", advertiseDict]autorelease];
+    [self logCat:log];
 }
 
-/////////////*
-//Public method
-////////////*/
-- (void) notifyData:(NSData*)data
+#pragma mark for development
+- (void) logCat:(NSString*)logText
 {
-    // Send data to central
-    BOOL result = [self.pManager updateValue:data
-                           forCharacteristic:self.characteristic_01
-                        onSubscribedCentrals:nil];
-    NSLog(@"notify data:%@, result:%d", data, result);
+    NSLog(@"%@", logText);
+    [self.delegate logPeripheral:logText];
 }
 
 @end
