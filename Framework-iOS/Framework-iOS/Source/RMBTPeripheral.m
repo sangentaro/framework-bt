@@ -9,7 +9,9 @@
 #import "RMBTPeripheral.h"
 
 #define SERVICE_UUID1 @"4C4EAD56-3AA2-43A3-B864-4C635573AEB8"
+#define SERVICE_UUID2 @"82F9F4C9-9420-41C7-AD0B-4A861BD84A2C"
 #define CHARACTERISTIC_UUID1 @"892757EF-D943-43C2-B079-F66442CF069C"
+#define CHARACTERISTIC_UUID2 @"8F455344-490F-4693-A53B-923F2C0EC2E4"
 
 @implementation RMBTPeripheral
 
@@ -75,11 +77,37 @@
                                                                     value:nil
                                                               permissions:CBAttributePermissionsReadable]autorelease];
     
+    // Create characteristic implemented in the service
+    CBUUID *characteristic_uuid2 = [CBUUID UUIDWithString:CHARACTERISTIC_UUID2];
+    self.characteristic_02 = [[[CBMutableCharacteristic alloc]initWithType:characteristic_uuid2
+                                                                properties:CBCharacteristicPropertyWrite
+                                                                     value:nil
+                                                               permissions:CBAttributePermissionsWriteable]autorelease];
+    
     // Set characteristic to service
-    [self.service_01 setCharacteristics:@[self.characteristic_01]];
+    [self.service_01 setCharacteristics:@[self.characteristic_01, self.characteristic_02]];
     
     // Add service to peripheral
     [self.pManager addService:self.service_01];
+    
+    
+    
+//    CBUUID *service_uuid2 = [CBUUID UUIDWithString:SERVICE_UUID2];
+//    self.service_02 = [[[CBMutableService alloc]initWithType:service_uuid2 primary:YES]autorelease];
+//    
+//    // Create characteristic implemented in the service
+//    CBUUID *characteristic_uuid2 = [CBUUID UUIDWithString:CHARACTERISTIC_UUID2];
+//    self.characteristic_02 = [[[CBMutableCharacteristic alloc]initWithType:characteristic_uuid2
+//                                                                properties:CBCharacteristicPropertyWrite
+//                                                                     value:nil
+//                                                               permissions:CBAttributePermissionsWriteable]autorelease];
+//    
+//    // Set characteristic to service
+//    [self.service_02 setCharacteristics:@[self.characteristic_02]];
+//    
+//    // Add service to peripheral
+//    [self.pManager addService:self.service_02];
+    
 }
 
 - (void) startAdvertize

@@ -21,8 +21,10 @@
 @property (nonatomic, strong) id<RMBTCentralDelegate> delegate;
 @property (nonatomic, strong) CBCentralManager *cManager;
 @property (nonatomic, strong) CBPeripheral *peripheral;
+@property (nonatomic, strong) CBCharacteristic *characteristic;
 @property (nonatomic, strong) NSString *idCentral;
 
 - (id) initWithDelegate:(id<RMBTCentralDelegate>)delegate centralId:(NSString*)centralId;
+- (void) writeDataToPeriperal:(NSData*)data;
 
 @end

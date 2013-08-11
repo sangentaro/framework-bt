@@ -9,7 +9,9 @@
 #import "RMBTCentral.h"
 
 #define SERVICE_UUID1 @"4C4EAD56-3AA2-43A3-B864-4C635573AEB8"
+#define SERVICE_UUID2 @"82F9F4C9-9420-41C7-AD0B-4A861BD84A2C"
 #define CHARACTERISTIC_UUID1 @"892757EF-D943-43C2-B079-F66442CF069C"
+#define CHARACTERISTIC_UUID2 @"8F455344-490F-4693-A53B-923F2C0EC2E4"
 
 @implementation RMBTCentral
 
@@ -61,7 +63,7 @@
     NSDictionary *options = [NSDictionary dictionaryWithObject:[NSNumber numberWithBool:NO]
                                                         forKey:CBCentralManagerScanOptionAllowDuplicatesKey];
 #endif
-    [self.cManager scanForPeripheralsWithServices:[NSArray arrayWithObjects:[CBUUID UUIDWithString:SERVICE_UUID1], nil] options:options];
+    [self.cManager scanForPeripheralsWithServices:[NSArray arrayWithObjects:[CBUUID UUIDWithString:SERVICE_UUID1], [CBUUID UUIDWithString:SERVICE_UUID2], nil] options:options];
 }
 
 - (void) centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)RSSI
@@ -119,6 +121,9 @@
         }else{
             NSString *log = [[[NSString alloc]initWithFormat:@"CENTRAL: characteristics Discovered.Service:%@, Characteristic:%@", service.UUID, characteristic.UUID]autorelease];
             [self logCat:log];
+            
+            self.characteristic = characteristic;
+                        
         }
     }
 }
@@ -132,6 +137,16 @@
                       characteristic.UUID,
                       receivedString]autorelease];
     [self logCat:log];
+}
+
+- (void) writeDataToPeriperal:(NSData*)data
+{
+    NSString *messageStr = @"Hello";
+    
+    NSData *message = [messageStr dataUsingEncoding:NSUTF8StringEncoding];
+    
+    [self.peripheral writeValue:message forCharacteristic:self.characteristic type:CBCharacteristicWriteWithoutResponse];
+    
 }
 
 #pragma mark for development

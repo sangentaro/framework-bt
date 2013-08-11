@@ -21,7 +21,9 @@
 @property (nonatomic, strong) id<RMBTPeripheralDelegate> delegate;
 @property (nonatomic, strong) CBPeripheralManager *pManager;
 @property (nonatomic, strong) CBMutableService *service_01;
+@property (nonatomic, strong) CBMutableService *service_02;
 @property (nonatomic, strong) CBMutableCharacteristic *characteristic_01;
+@property (nonatomic, strong) CBMutableCharacteristic *characteristic_02;
 @property (nonatomic, strong) NSString *idPeripheral;
 
 - (id) initWithDelegate:(id<RMBTPeripheralDelegate>)delegate peripheralId:(NSString*)peripheralId;
