@@ -11,7 +11,8 @@
 
 @protocol RMBTCentralDelegate
 @required
-- (void)foo;
+- (void)centralError:(NSString*)errorMsg;
+- (void)cannotFindServiceError;
 @optional
 - (void)logCentral:(NSString*)logText;
 @end

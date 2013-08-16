@@ -40,6 +40,9 @@
 		60ED4221136C5C2D00F3D3ED /* Framework_iOSAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 60ED4210136C5C2D00F3D3ED /* Framework_iOSAppDelegate.m */; };
 		60ED4222136C5C2D00F3D3ED /* Framework_iOSViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 60ED4212136C5C2D00F3D3ED /* Framework_iOSViewController.m */; };
 		60ED4224136C5C2D00F3D3ED /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 60ED4216136C5C2D00F3D3ED /* main.m */; };
+		F605FBC417BE9510006350E2 /* RMLog.m in Sources */ = {isa = PBXBuildFile; fileRef = F605FBC317BE9510006350E2 /* RMLog.m */; };
+		F605FBC517BE96E6006350E2 /* RMLog.m in Sources */ = {isa = PBXBuildFile; fileRef = F605FBC317BE9510006350E2 /* RMLog.m */; };
+		F605FBC617BE96FB006350E2 /* RMLog.m in Headers */ = {isa = PBXBuildFile; fileRef = F605FBC317BE9510006350E2 /* RMLog.m */; settings = {ATTRIBUTES = (Private, ); }; };
 		F6989DF117AFE36800213D83 /* RMBTPeripheral.m in Sources */ = {isa = PBXBuildFile; fileRef = F6989DF017AFE36800213D83 /* RMBTPeripheral.m */; };
 		F6989DF217AFE37500213D83 /* RMBTPeripheral.h in Headers */ = {isa = PBXBuildFile; fileRef = F6989DEF17AFE36800213D83 /* RMBTPeripheral.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F6989DF317AFE37A00213D83 /* RMBTPeripheral.m in Sources */ = {isa = PBXBuildFile; fileRef = F6989DF017AFE36800213D83 /* RMBTPeripheral.m */; };
@@ -76,6 +79,8 @@
 		60ED4216136C5C2D00F3D3ED /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		60ED4233136C5F3000F3D3ED /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		60ED42A7136C6A4900F3D3ED /* BTKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BTKit.h; sourceTree = "<group>"; };
+		F605FBC217BE9510006350E2 /* RMLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RMLog.h; sourceTree = "<group>"; };
+		F605FBC317BE9510006350E2 /* RMLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RMLog.m; sourceTree = "<group>"; };
 		F6989DEF17AFE36800213D83 /* RMBTPeripheral.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RMBTPeripheral.h; sourceTree = "<group>"; };
 		F6989DF017AFE36800213D83 /* RMBTPeripheral.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RMBTPeripheral.m; sourceTree = "<group>"; };
 		F6989DF417AFE3EA00213D83 /* RMBTCentral.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RMBTCentral.h; sourceTree = "<group>"; };
@@ -209,6 +214,8 @@
 				F6989DF017AFE36800213D83 /* RMBTPeripheral.m */,
 				F6989DF417AFE3EA00213D83 /* RMBTCentral.h */,
 				F6989DF517AFE3EA00213D83 /* RMBTCentral.m */,
+				F605FBC217BE9510006350E2 /* RMLog.h */,
+				F605FBC317BE9510006350E2 /* RMLog.m */,
 			);
 			path = Source;
 			sourceTree = "<group>";
@@ -223,6 +230,7 @@
 				60EA0AAC13CB1FD700A0F61F /* BTKit.h in Headers */,
 				F6989DF217AFE37500213D83 /* RMBTPeripheral.h in Headers */,
 				F6989DF817AFEA7700213D83 /* RMBTCentral.h in Headers */,
+				F605FBC617BE96FB006350E2 /* RMLog.m in Headers */,
 				60EA0ABA13CB206800A0F61F /* FI-Prefix.pch in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -343,6 +351,7 @@
 			files = (
 				F6989DF317AFE37A00213D83 /* RMBTPeripheral.m in Sources */,
 				F6989DF717AFEA7200213D83 /* RMBTCentral.m in Sources */,
+				F605FBC517BE96E6006350E2 /* RMLog.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -355,6 +364,7 @@
 				60ED4224136C5C2D00F3D3ED /* main.m in Sources */,
 				F6989DF117AFE36800213D83 /* RMBTPeripheral.m in Sources */,
 				F6989DF617AFE3EA00213D83 /* RMBTCentral.m in Sources */,
+				F605FBC417BE9510006350E2 /* RMLog.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

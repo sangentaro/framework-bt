@@ -7,16 +7,22 @@
 //
 
 #import "RMBTCentral.h"
+#import "RMLog.h"
 
 #define SERVICE_UUID1 @"4C4EAD56-3AA2-43A3-B864-4C635573AEB8"
-#define SERVICE_UUID2 @"82F9F4C9-9420-41C7-AD0B-4A861BD84A2C"
 #define CHARACTERISTIC_UUID1 @"892757EF-D943-43C2-B079-F66442CF069C"
 #define CHARACTERISTIC_UUID2 @"8F455344-490F-4693-A53B-923F2C0EC2E4"
 
-@implementation RMBTCentral
+#define TIME_INTERVAL 10
+
+@implementation RMBTCentral{
+    NSTimer *aTimer;
+    bool isReceivingNotifycation;
+}
 
 @synthesize idCentral;
 
+#pragma mark life cycle
 - (void) dealloc
 {
     _delegate = nil;
@@ -27,6 +33,7 @@
     [super dealloc];
 }
 
+#pragma mark public methods
 - (id) initWithDelegate:(id<RMBTCentralDelegate>)delegate centralId:(NSString*)centralId
 {
     self = [super init];
@@ -39,17 +46,11 @@
     return self;
 }
 
-- (void)centralManagerDidUpdateState:(CBCentralManager *)central {
-    NSString *log = [[[NSString alloc]initWithFormat:@"CENTRAL: start cnetral"]autorelease];
-    [self logCat:log];
-    switch (central.state) {
-        case CBCentralManagerStatePoweredOn:
-            // Scans for any peripheral
-            [self startScan];
-            break;
-        default:
-            NSLog(@"Central Manager did change state");
-            break;
+- (void) writeDataToPeriperal:(NSData*)data
+{
+    if(self.characteristic != NULL){
+        [self.peripheral writeValue:data forCharacteristic:self.characteristic type:CBCharacteristicWriteWithResponse];
+        [self logCat:@"Write value to peripheral"];
     }
 }
 
@@ -63,7 +64,24 @@
     NSDictionary *options = [NSDictionary dictionaryWithObject:[NSNumber numberWithBool:NO]
                                                         forKey:CBCentralManagerScanOptionAllowDuplicatesKey];
 #endif
-    [self.cManager scanForPeripheralsWithServices:[NSArray arrayWithObjects:[CBUUID UUIDWithString:SERVICE_UUID1], [CBUUID UUIDWithString:SERVICE_UUID2], nil] options:options];
+    [self.cManager scanForPeripheralsWithServices:[NSArray arrayWithObjects:[CBUUID UUIDWithString:SERVICE_UUID1], nil] options:options];
+    
+}
+
+#pragma mark CBCentralManager delegate
+- (void)centralManagerDidUpdateState:(CBCentralManager *)central
+{
+    NSString *log = [[[NSString alloc]initWithFormat:@"CENTRAL: start cnetral"]autorelease];
+    [self logCat:log];
+    switch (central.state) {
+        case CBCentralManagerStatePoweredOn:
+            [self logCat:@"Central Manager is ready"];
+            [self startScan];
+            break;
+        default:
+            [self logCat:@"Central Manager not ready"];
+            break;
+    }
 }
 
 - (void) centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)RSSI
@@ -78,7 +96,7 @@
         [self logCat:log];
         
         // stop scan
-        //[self.cManager stopScan];
+        [self.cManager stopScan];
         
         self.peripheral = peripheral;
         
@@ -93,14 +111,27 @@
 
 - (void) centralManager:(CBCentralManager *)central didConnectPeripheral:(CBPeripheral *)peripheral
 {
+    [self logCat:@"did connect peripheral"];
     [peripheral setDelegate:self];
     [peripheral discoverServices:[NSArray arrayWithObject:[CBUUID UUIDWithString:SERVICE_UUID1]]];
 }
 
+- (void)centralManager:(CBCentralManager *)central didFailToConnectPeripheral:(CBPeripheral *)peripheral error:(NSError *)error {
+    if(error != NULL){
+        [_delegate centralError:[NSString stringWithFormat:@"%@", error]];
+    }
+}
+
+#pragma mark CBPeripheral delegate
 - (void) peripheral:(CBPeripheral *)peripheral didDiscoverServices:(NSError *)error
 {
+    
+    if(error != NULL){
+        [_delegate centralError:[NSString stringWithFormat:@"%@", error]];
+    }
+    
     NSArray *services = peripheral.services;
-    NSString *log = [[[NSString alloc]initWithFormat:@"CENTRAL: services count:%d, %@", [services count], error]autorelease];
+    NSString *log = [[[NSString alloc]initWithFormat:@"CENTRAL: services count:%d", [services count]]autorelease];
     [self logCat:log];
     
     for (CBService *service in services){
@@ -108,10 +139,16 @@
         [self logCat:log];
         [peripheral discoverCharacteristics:nil forService:service];
     }
+    
 }
 
 - (void) peripheral:(CBPeripheral *)peripheral didDiscoverCharacteristicsForService:(CBService *)service error:(NSError *)error
 {
+    
+    if(error != NULL){
+        [_delegate centralError:[NSString stringWithFormat:@"%@", error]];
+    }
+    
     // Set Notify
     for(CBCharacteristic *characteristic in service.characteristics){
         if(characteristic.properties &(CBCharacteristicPropertyNotify | CBCharacteristicPropertyIndicateEncryptionRequired)){
@@ -126,12 +163,19 @@
                         
         }
     }
+        
 }
 
-// Operation when recieving notification
 - (void) peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error
 {
+    
+    if(error != NULL){
+        [_delegate centralError:[NSString stringWithFormat:@"%@", error]];
+    }
+    
     NSString *receivedString = [[[NSString alloc] initWithData:characteristic.value encoding:NSUTF8StringEncoding]autorelease];
+    
+    
     NSString *log = [[[NSString alloc]initWithFormat:@"CENTRAL: UpdateValue.Service:%@, Characteristic:%@, request value%@",
                       characteristic.service.UUID,
                       characteristic.UUID,
@@ -139,25 +183,42 @@
     [self logCat:log];
 }
 
-- (void) writeDataToPeriperal:(NSData*)data
+- (void) peripheral:(CBPeripheral *)peripheral didWriteValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error
 {
-    if(self.characteristic != NULL){
-        [self.peripheral writeValue:data forCharacteristic:self.characteristic type:CBCharacteristicWriteWithResponse];
-    [self logCat:@"write"];
+    if(error != NULL){
+        [_delegate centralError:[NSString stringWithFormat:@"%@", error]];
     }
 }
 
-- (void) peripheral:(CBPeripheral *)peripheral didWriteValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error
+#pragma mark timer
+
+-(void)startTimer
 {
-    if(error!= NULL){
-        NSLog(@"%@", error);
+    if (aTimer) {
+        [self stopTimer];
     }
+    aTimer = [NSTimer scheduledTimerWithTimeInterval:TIME_INTERVAL
+                                              target:self
+                                            selector:@selector(tick:)
+                                            userInfo:nil
+                                            repeats:NO];
+}
+
+-(void)stopTimer
+{
+    [aTimer invalidate];
+    aTimer = nil;
+}
+
+-(void)tick:(NSTimer*)theTimer
+{
+    [_delegate cannotFindServiceError];
 }
 
 #pragma mark for development
 - (void) logCat:(NSString*)logText
 {
-    NSLog(@"%@", logText);
+    [RMLog log:self message:logText];
     [self.delegate logCentral:logText];
 }
 

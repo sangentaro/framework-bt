@@ -7,11 +7,14 @@
 //
 
 #import "RMBTPeripheral.h"
+#import "RMLog.h"
 
-#define SERVICE_UUID1 @"4C4EAD56-3AA2-43A3-B864-4C635573AEB8"
-#define SERVICE_UUID2 @"82F9F4C9-9420-41C7-AD0B-4A861BD84A2C"
+#define SERVICE_UUID1        @"4C4EAD56-3AA2-43A3-B864-4C635573AEB8"
 #define CHARACTERISTIC_UUID1 @"892757EF-D943-43C2-B079-F66442CF069C"
 #define CHARACTERISTIC_UUID2 @"8F455344-490F-4693-A53B-923F2C0EC2E4"
+
+#define NOTIFY_START_TAG     @"nst::"
+#define NOTIFY_END_TAG       @"::ned"
 
 @implementation RMBTPeripheral
 {
@@ -37,6 +40,7 @@
 #pragma mark public methods
 - (id) initWithDelegate:(id<RMBTPeripheralDelegate>)delegate peripheralId:(NSString*)peripheralId
 {
+    
     self = [super init];
     if(self){
         // TODO: queue = nill means it runs on main thread. specify any thread if required
@@ -50,23 +54,25 @@
 
 - (void) notifyData:(NSData*)data
 {
-    mainData = data;
+    NSString *str= [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]autorelease];
+    str = [NSString stringWithFormat:@"%@%@", NOTIFY_START_TAG, str];
+    mainData = [str dataUsingEncoding:NSUTF8StringEncoding];
+
     [self notifyingData];
 }
 
+# pragma mark helper for notifyData
 - (void) notifyingData
 {
     while ([self hasData]) {
         if([self.pManager updateValue:[self getNextData] forCharacteristic:self.characteristic_01 onSubscribedCentrals:nil]){
             [self ridData];
         }else{
-            NSLog(@"failed to send");
+            [self logCat:@"No Data to send"];
             return;
         }
     }
-    NSString *stra = @"ENDAL";
-    NSData *dataa = [stra dataUsingEncoding:NSUTF8StringEncoding];
-    [self.pManager updateValue:dataa forCharacteristic:self.characteristic_01 onSubscribedCentrals:nil];
+    [self updateValueFromString:NOTIFY_END_TAG];
 }
 
 - (void) peripheralManagerIsReadyToUpdateSubscribers:(CBPeripheralManager *)peripheral
@@ -82,6 +88,13 @@
         range = nil;
         return NO;
     }
+}
+
+- (void) updateValueFromString:(NSString*)value
+{
+    NSString *stra = value;
+    NSData *dataa = [stra dataUsingEncoding:NSUTF8StringEncoding];
+    [self.pManager updateValue:dataa forCharacteristic:self.characteristic_01 onSubscribedCentrals:nil];
 }
 
 - (void)ridData{
@@ -105,16 +118,6 @@
         data = [mainData subdataWithRange:NSRangeFromString(range)];
     }
     return data;
-}
-
-- (void)peripheralManagerDidUpdateState:(CBPeripheralManager *)peripheral {
-    switch (peripheral.state) {
-        case CBPeripheralManagerStatePoweredOn:
-            [self startAdvertize];
-            break;
-        default:
-            break;
-    }
 }
 
 - (void) initManager
@@ -142,7 +145,6 @@
     
     // Add service to peripheral
     [self.pManager addService:self.service_01];
-        
 }
 
 - (void) startAdvertize
@@ -162,6 +164,18 @@
     [self logCat:log];
 }
 
+# pragma mark peripheral manager delegate
+- (void)peripheralManagerDidUpdateState:(CBPeripheralManager *)peripheral {
+    switch (peripheral.state) {
+        case CBPeripheralManagerStatePoweredOn:
+            [self startAdvertize];
+            break;
+        default:
+            [self logCat:@"Central Manager not ready"];
+            break;
+    }
+}
+
 - (void) peripheralManager:(CBPeripheralManager *)peripheral didReceiveWriteRequests:(NSArray *)requests
 {
     [self logCat:@"did recieve write data"];
@@ -174,7 +188,7 @@
 #pragma mark for development
 - (void) logCat:(NSString*)logText
 {
-    NSLog(@"%@", logText);
+    [RMLog log:self message:logText];
     [self.delegate logPeripheral:logText];
 }
 
