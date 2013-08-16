@@ -162,6 +162,15 @@
     [self logCat:log];
 }
 
+- (void) peripheralManager:(CBPeripheralManager *)peripheral didReceiveWriteRequests:(NSArray *)requests
+{
+    [self logCat:@"did recieve write data"];
+    for (CBATTRequest *aReq in requests){
+        [self logCat:[[NSString alloc]initWithData:aReq.value encoding:NSUTF8StringEncoding]];
+        [peripheral respondToRequest:aReq withResult:CBATTErrorSuccess];
+    }
+}
+
 #pragma mark for development
 - (void) logCat:(NSString*)logText
 {

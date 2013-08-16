@@ -141,11 +141,17 @@
 
 - (void) writeDataToPeriperal:(NSData*)data
 {
-    NSString *messageStr = @"Hello";
-    
-    NSData *message = [messageStr dataUsingEncoding:NSUTF8StringEncoding];
-    
-    [self.peripheral writeValue:message forCharacteristic:self.characteristic type:CBCharacteristicWriteWithoutResponse];
+    if(self.characteristic != NULL){
+        [self.peripheral writeValue:data forCharacteristic:self.characteristic type:CBCharacteristicWriteWithResponse];
+    [self logCat:@"write"];
+    }
+}
+
+- (void) peripheral:(CBPeripheral *)peripheral didWriteValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error
+{
+    if(error!= NULL){
+        NSLog(@"%@", error);
+    }
 }
 
 #pragma mark for development
