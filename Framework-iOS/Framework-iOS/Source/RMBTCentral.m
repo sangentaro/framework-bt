@@ -146,7 +146,6 @@
     NSData *message = [messageStr dataUsingEncoding:NSUTF8StringEncoding];
     
     [self.peripheral writeValue:message forCharacteristic:self.characteristic type:CBCharacteristicWriteWithoutResponse];
-    
 }
 
 #pragma mark for development

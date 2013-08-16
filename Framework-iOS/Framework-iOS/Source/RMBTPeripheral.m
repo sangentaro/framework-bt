@@ -14,6 +14,10 @@
 #define CHARACTERISTIC_UUID2 @"8F455344-490F-4693-A53B-923F2C0EC2E4"
 
 @implementation RMBTPeripheral
+{
+    NSData *mainData;
+    NSString *range;
+}
 
 @synthesize idPeripheral;
 
@@ -46,12 +50,61 @@
 
 - (void) notifyData:(NSData*)data
 {
-    // Send data to central
-    BOOL result = [self.pManager updateValue:data
-                           forCharacteristic:self.characteristic_01
-                        onSubscribedCentrals:nil];
-    NSString *log = [[[NSString alloc]initWithFormat:@"PERIPHERAL: notify data:%@, result:%d", data, result]autorelease];
-    [self logCat:log];
+    mainData = data;
+    [self notifyingData];
+}
+
+- (void) notifyingData
+{
+    while ([self hasData]) {
+        if([self.pManager updateValue:[self getNextData] forCharacteristic:self.characteristic_01 onSubscribedCentrals:nil]){
+            [self ridData];
+        }else{
+            NSLog(@"failed to send");
+            return;
+        }
+    }
+    NSString *stra = @"ENDAL";
+    NSData *dataa = [stra dataUsingEncoding:NSUTF8StringEncoding];
+    [self.pManager updateValue:dataa forCharacteristic:self.characteristic_01 onSubscribedCentrals:nil];
+}
+
+- (void) peripheralManagerIsReadyToUpdateSubscribers:(CBPeripheralManager *)peripheral
+{
+    [self notifyingData];
+}
+
+- (BOOL)hasData
+{
+    if ([mainData length]>0) {
+        return YES;
+    }else{
+        range = nil;
+        return NO;
+    }
+}
+
+- (void)ridData{
+    if ([mainData length]>19) {
+        mainData = [[mainData subdataWithRange:NSRangeFromString(range)]retain];
+    }else{
+        mainData = nil;
+    }
+}
+
+- (NSData *)getNextData
+{
+    NSData *data;
+    if ([mainData length]>19) {
+        int datarest = [mainData length]-20;
+        data = [mainData subdataWithRange:NSRangeFromString(@"{0,20}")];
+        range = [NSString stringWithFormat:@"{20,%i}",datarest];
+    }else{
+        int datarest = [mainData length];
+        range = [NSString stringWithFormat:@"{0,%i}",datarest];
+        data = [mainData subdataWithRange:NSRangeFromString(range)];
+    }
+    return data;
 }
 
 - (void)peripheralManagerDidUpdateState:(CBPeripheralManager *)peripheral {
@@ -89,25 +142,7 @@
     
     // Add service to peripheral
     [self.pManager addService:self.service_01];
-    
-    
-    
-//    CBUUID *service_uuid2 = [CBUUID UUIDWithString:SERVICE_UUID2];
-//    self.service_02 = [[[CBMutableService alloc]initWithType:service_uuid2 primary:YES]autorelease];
-//    
-//    // Create characteristic implemented in the service
-//    CBUUID *characteristic_uuid2 = [CBUUID UUIDWithString:CHARACTERISTIC_UUID2];
-//    self.characteristic_02 = [[[CBMutableCharacteristic alloc]initWithType:characteristic_uuid2
-//                                                                properties:CBCharacteristicPropertyWrite
-//                                                                     value:nil
-//                                                               permissions:CBAttributePermissionsWriteable]autorelease];
-//    
-//    // Set characteristic to service
-//    [self.service_02 setCharacteristics:@[self.characteristic_02]];
-//    
-//    // Add service to peripheral
-//    [self.pManager addService:self.service_02];
-    
+        
 }
 
 - (void) startAdvertize
