@@ -8,16 +8,17 @@
 
 #import "RMBTPeripheral.h"
 #import "RMLog.h"
+#import "NSString+Split.h"
 
 #define SERVICE_UUID1        @"4C4EAD56-3AA2-43A3-B864-4C635573AEB8"
 #define CHARACTERISTIC_UUID1 @"892757EF-D943-43C2-B079-F66442CF069C"
 #define CHARACTERISTIC_UUID2 @"8F455344-490F-4693-A53B-923F2C0EC2E4"
 
-#define NOTIFY_START_TAG     @"nst::"
 #define NOTIFY_END_TAG       @"::ned"
 
 @implementation RMBTPeripheral
 {
+    int packetIndex;
     NSData *mainData;
     NSString *range;
 }
@@ -55,15 +56,23 @@
 - (void) notifyData:(NSData*)data
 {
     NSString *str= [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]autorelease];
-    str = [NSString stringWithFormat:@"%@%@", NOTIFY_START_TAG, str];
-    mainData = [str dataUsingEncoding:NSUTF8StringEncoding];
-
+    
+    int index = 0;
+    NSString *result = @"";
+    NSArray *strArray = [str splitCharacterEvery:17];
+    for (NSString *splitedString in strArray) {
+        result = [NSString stringWithFormat:@"%@%@%@",result, [NSString stringWithFormat:@"%02d:", index], splitedString];
+        index ++;
+    }
+    
+    mainData = [result dataUsingEncoding:NSUTF8StringEncoding];
     [self notifyingData];
 }
 
 # pragma mark helper for notifyData
 - (void) notifyingData
 {
+    
     while ([self hasData]) {
         if([self.pManager updateValue:[self getNextData] forCharacteristic:self.characteristic_01 onSubscribedCentrals:nil]){
             [self ridData];
@@ -82,7 +91,7 @@
 
 - (BOOL)hasData
 {
-    if ([mainData length]>0) {
+    if ([mainData length]>0) {        
         return YES;
     }else{
         range = nil;

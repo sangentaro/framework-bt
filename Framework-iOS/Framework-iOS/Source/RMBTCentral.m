@@ -15,9 +15,13 @@
 
 #define TIME_INTERVAL 10
 
+#define NOTIFY_END_TAG       @"::ned"
+
 @implementation RMBTCentral{
+    NSString *notifyResult;
     NSTimer *aTimer;
-    bool isReceivingNotifycation;
+    int notifyReceiveIndex;
+    bool isReceiveError;
 }
 
 @synthesize idCentral;
@@ -175,12 +179,27 @@
     
     NSString *receivedString = [[[NSString alloc] initWithData:characteristic.value encoding:NSUTF8StringEncoding]autorelease];
     
-    
-    NSString *log = [[[NSString alloc]initWithFormat:@"CENTRAL: UpdateValue.Service:%@, Characteristic:%@, request value%@",
-                      characteristic.service.UUID,
-                      characteristic.UUID,
-                      receivedString]autorelease];
-    [self logCat:log];
+    if ([receivedString hasPrefix:@"00:"]){
+        notifyReceiveIndex = 1;
+        isReceiveError = false;
+        notifyResult = [[receivedString substringFromIndex:3]retain];
+    }else if([receivedString hasPrefix:[NSString stringWithFormat:@"%02d:", notifyReceiveIndex]]){
+        notifyResult = [[NSString stringWithFormat:@"%@%@", notifyResult, [receivedString substringFromIndex:3]]retain];
+        notifyReceiveIndex ++;
+    }else if([receivedString isEqualToString:NOTIFY_END_TAG]){
+        if(isReceiveError){
+            [self logCat:@"error while receiving notifycation"];
+        }else{
+            [self logCat:notifyResult];
+        }
+        notifyResult = nil;
+        notifyReceiveIndex = 0;
+    }else{                                  //Error case
+        notifyResult = nil;
+        notifyReceiveIndex = 0;
+        isReceiveError = true;
+    }
+
 }
 
 - (void) peripheral:(CBPeripheral *)peripheral didWriteValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error

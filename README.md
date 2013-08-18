@@ -4,7 +4,8 @@ framework-bt
 framework-bt
 
 ##TODO:
-* 送信の全データにパケット番号を振る
+* Notyficationが受信出来たかどうかを、Central側からPeripheral側に通知する
+* ゲームで使うBTの機能を洗い出しして、Frameworkに乗せるかを検討する
 
 ##BUG:
 
