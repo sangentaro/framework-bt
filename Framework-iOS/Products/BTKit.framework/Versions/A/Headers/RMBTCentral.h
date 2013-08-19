@@ -13,6 +13,7 @@
 @required
 - (void)centralError:(NSString*)errorMsg;
 - (void)cannotFindServiceError;
+- (void)peripheralFound;
 @optional
 - (void)logCentral:(NSString*)logText;
 @end
@@ -21,11 +22,13 @@
 
 @property (nonatomic, strong) id<RMBTCentralDelegate> delegate;
 @property (nonatomic, strong) CBCentralManager *cManager;
+@property (nonatomic, strong) NSMutableArray *peripherals;
 @property (nonatomic, strong) CBPeripheral *peripheral;
 @property (nonatomic, strong) CBCharacteristic *characteristic;
 @property (nonatomic, strong) NSString *idCentral;
 
 - (id) initWithDelegate:(id<RMBTCentralDelegate>)delegate centralId:(NSString*)centralId;
 - (void) writeDataToPeriperal:(NSData*)data;
+- (void) connectToPeripheral:(int)index;
 
 @end

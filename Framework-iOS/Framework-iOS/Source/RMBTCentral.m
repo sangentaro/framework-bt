@@ -8,14 +8,13 @@
 
 #import "RMBTCentral.h"
 #import "RMLog.h"
+#import "DefConst.h"
 
 #define SERVICE_UUID1 @"4C4EAD56-3AA2-43A3-B864-4C635573AEB8"
 #define CHARACTERISTIC_UUID1 @"892757EF-D943-43C2-B079-F66442CF069C"
 #define CHARACTERISTIC_UUID2 @"8F455344-490F-4693-A53B-923F2C0EC2E4"
 
 #define TIME_INTERVAL 10
-
-#define NOTIFY_END_TAG       @"::ned"
 
 @implementation RMBTCentral{
     NSString *notifyResult;
@@ -25,6 +24,7 @@
 }
 
 @synthesize idCentral;
+@synthesize peripherals;
 
 #pragma mark life cycle
 - (void) dealloc
@@ -32,6 +32,7 @@
     _delegate = nil;
     [_cManager release];
     [_peripheral release];
+    [peripherals release];
     [idCentral release];
     
     [super dealloc];
@@ -40,23 +41,61 @@
 #pragma mark public methods
 - (id) initWithDelegate:(id<RMBTCentralDelegate>)delegate centralId:(NSString*)centralId
 {
+    
     self = [super init];
     if(self){
         //TODO: queus = nil means this runs on main thread. specify other if needed
         self.cManager = [[[CBCentralManager alloc]initWithDelegate:self queue:nil]autorelease];
         self.delegate = delegate;
         self.idCentral = centralId;
+        self.peripherals = [NSMutableArray array];
     }
     return self;
 }
 
+- (void) connectToPeripheral:(int)index
+{
+    
+    // Stop scan
+    [self.cManager stopScan];
+    
+    self.peripheral = [peripherals objectAtIndex:index];
+    
+    // CBConnectPeripheralOptionNotifiyOnDisconnectionKey can be set as option and yes shows alert when BT is disconnected when in background operation
+    [self.cManager connectPeripheral:self.peripheral options:nil];
+}
+
 - (void) writeDataToPeriperal:(NSData*)data
 {
+    [self writeDataToPeriperal:data withPrefixOf:AN];
+}
+
+#pragma mark internal methods
+- (void) writeDataToPeriperal:(NSData*)data withPrefixOf:(NSString*)prefix
+{
     if(self.characteristic != NULL){
-        [self.peripheral writeValue:data forCharacteristic:self.characteristic type:CBCharacteristicWriteWithResponse];
+        
+        NSString *str= [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]autorelease];
+        NSString *result = [NSString stringWithFormat:@"%@>%@", prefix, str];
+        NSData *resultData = [result dataUsingEncoding:NSUTF8StringEncoding];
+        
+        [self.peripheral writeValue:resultData forCharacteristic:self.characteristic type:CBCharacteristicWriteWithResponse];
         [self logCat:@"Write value to peripheral"];
     }
 }
+
+- (void) sendAckToNotify
+{
+    NSData *data = [idCentral dataUsingEncoding:NSUTF8StringEncoding];
+    [self writeDataToPeriperal:data withPrefixOf:AK];
+}
+
+- (void) sendIdToPeripheral
+{
+    NSData *data = [idCentral dataUsingEncoding:NSUTF8StringEncoding];
+    [self writeDataToPeriperal:data withPrefixOf:ID];
+}
+
 
 - (void) startScan
 {
@@ -99,13 +138,14 @@
         NSString *log = [[[NSString alloc]initWithFormat:@"CENTRAL: iOS in foreground discovered:%@, peripheral.UUID:%@, localName:%@", advertisementData, peripheral.UUID, localName]autorelease];
         [self logCat:log];
         
-        // stop scan
-        [self.cManager stopScan];
+//        // stop scan
+//        [self.cManager stopScan];
         
-        self.peripheral = peripheral;
+        [peripherals addObject:peripheral];
+        [_delegate peripheralFound];
         
-        // CBConnectPeripheralOptionNotifiyOnDisconnectionKey can be set as option and yes shows alert when BT is disconnected when in background operation
-        [self.cManager connectPeripheral:self.peripheral options:nil];
+        //TODO: update this line
+        [self connectToPeripheral:0];
         
     }else{
         NSString *log = [[[NSString alloc]initWithFormat:@"CENTRAL: unknown service found %@", advertisementData]autorelease];
@@ -164,6 +204,8 @@
             [self logCat:log];
             
             self.characteristic = characteristic;
+            
+            [self sendIdToPeripheral];
                         
         }
     }
@@ -185,12 +227,17 @@
         notifyResult = [[receivedString substringFromIndex:3]retain];
     }else if([receivedString hasPrefix:[NSString stringWithFormat:@"%02d:", notifyReceiveIndex]]){
         notifyResult = [[NSString stringWithFormat:@"%@%@", notifyResult, [receivedString substringFromIndex:3]]retain];
-        notifyReceiveIndex ++;
+        if(notifyReceiveIndex < 100){
+            notifyReceiveIndex ++;
+        }else{
+            notifyReceiveIndex = 0;
+        }
     }else if([receivedString isEqualToString:NOTIFY_END_TAG]){
         if(isReceiveError){
             [self logCat:@"error while receiving notifycation"];
         }else{
             [self logCat:notifyResult];
+            [self sendAckToNotify];
         }
         notifyResult = nil;
         notifyReceiveIndex = 0;
@@ -210,7 +257,6 @@
 }
 
 #pragma mark timer
-
 -(void)startTimer
 {
     if (aTimer) {

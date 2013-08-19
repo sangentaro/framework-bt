@@ -8,22 +8,26 @@
 
 #import "RMBTPeripheral.h"
 #import "RMLog.h"
+#import "DefConst.h"
 #import "NSString+Split.h"
 
 #define SERVICE_UUID1        @"4C4EAD56-3AA2-43A3-B864-4C635573AEB8"
 #define CHARACTERISTIC_UUID1 @"892757EF-D943-43C2-B079-F66442CF069C"
 #define CHARACTERISTIC_UUID2 @"8F455344-490F-4693-A53B-923F2C0EC2E4"
 
-#define NOTIFY_END_TAG       @"::ned"
+#define NOTIYFY_WAIT 5;
 
 @implementation RMBTPeripheral
 {
     int packetIndex;
+    bool notifying;
     NSData *mainData;
     NSString *range;
+    NSTimer *aTimer;
 }
 
 @synthesize idPeripheral;
+@synthesize centrals;
 
 #pragma mark life cycle
 - (void) dealloc
@@ -34,6 +38,7 @@
     [_service_01 release];
     [_characteristic_01 release];
     [idPeripheral release];
+    [centrals release];
     
     [super dealloc];
 }
@@ -48,6 +53,8 @@
         self.pManager = [[[CBPeripheralManager alloc]initWithDelegate:self queue:nil]autorelease];
         self.delegate = delegate;
         self.idPeripheral = peripheralId;
+        self.centrals = [NSMutableArray array];
+        notifying = false;
     }
     
     return self;
@@ -55,18 +62,30 @@
 
 - (void) notifyData:(NSData*)data
 {
-    NSString *str= [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]autorelease];
     
-    int index = 0;
-    NSString *result = @"";
-    NSArray *strArray = [str splitCharacterEvery:17];
-    for (NSString *splitedString in strArray) {
-        result = [NSString stringWithFormat:@"%@%@%@",result, [NSString stringWithFormat:@"%02d:", index], splitedString];
-        index ++;
+    if(!notifying){
+    
+        NSString *str= [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]autorelease];
+        
+        int index = 0;
+        NSString *result = @"";
+        NSArray *strArray = [str splitCharacterEvery:17];
+        for (NSString *splitedString in strArray) {
+            result = [NSString stringWithFormat:@"%@%@%@",result, [NSString stringWithFormat:@"%02d:", index], splitedString];
+            if(index < 100){
+                index ++;
+            }else{
+                index = 0;
+            }
+        }
+        
+        mainData = [result dataUsingEncoding:NSUTF8StringEncoding];
+        [self notifyingData];
+        
+        notifying = true;
+        
     }
-    
-    mainData = [result dataUsingEncoding:NSUTF8StringEncoding];
-    [self notifyingData];
+        
 }
 
 # pragma mark helper for notifyData
@@ -82,6 +101,7 @@
         }
     }
     [self updateValueFromString:NOTIFY_END_TAG];
+    
 }
 
 - (void) peripheralManagerIsReadyToUpdateSubscribers:(CBPeripheralManager *)peripheral
@@ -188,10 +208,60 @@
 - (void) peripheralManager:(CBPeripheralManager *)peripheral didReceiveWriteRequests:(NSArray *)requests
 {
     [self logCat:@"did recieve write data"];
+    NSString *receivedString = @"";
     for (CBATTRequest *aReq in requests){
-        [self logCat:[[NSString alloc]initWithData:aReq.value encoding:NSUTF8StringEncoding]];
+        NSString *stringInRequest = [[[NSString alloc]initWithData:aReq.value encoding:NSUTF8StringEncoding]autorelease];
+        receivedString = [[NSString stringWithFormat:@"%@%@", receivedString, stringInRequest]retain];
         [peripheral respondToRequest:aReq withResult:CBATTErrorSuccess];
     }
+    
+    [self logCat:receivedString];
+    
+    NSString *prefix = [receivedString substringToIndex:3];
+    
+    if([prefix isEqualToString:AK]){
+        if(notifying){
+            //TODO: Implement operation for the case connected to multiple centrals
+            [self logCat:@"notify acknowledged"];
+            notifying = false;
+        }
+        
+    }else if([prefix isEqualToString:ID]){
+    
+        NSString *idString = [receivedString substringFromIndex:3];
+        [centrals addObject:idString];
+        [self logCat:@"id:%@ is added", idString];
+    
+    }else if([prefix isEqualToString:AN]){
+        
+    }
+}
+
+#pragma mark timer
+-(void)startTimer
+{
+    if (aTimer) {
+        [self stopTimer];
+    }
+    aTimer = [NSTimer scheduledTimerWithTimeInterval:5
+                                              target:self
+                                            selector:@selector(tick:)
+                                            userInfo:nil
+                                             repeats:NO];
+}
+
+-(void)stopTimer
+{
+    [aTimer invalidate];
+    aTimer = nil;
+}
+
+-(void)tick:(NSTimer*)theTimer
+{
+    //TODO implement for the case when connected to multiple centrals
+    [_delegate ackNotReceived];
+    [self logCat:@"ack not received"];
+    notifying = false;
 }
 
 #pragma mark for development

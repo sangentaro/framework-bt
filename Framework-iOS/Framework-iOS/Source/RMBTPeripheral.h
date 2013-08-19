@@ -11,7 +11,7 @@
 
 @protocol RMBTPeripheralDelegate
 @required
-- (void)foo;
+- (void)ackNotReceived;
 @optional
 - (void)logPeripheral:(NSString*)logText;
 @end
@@ -25,6 +25,7 @@
 @property (nonatomic, strong) CBMutableCharacteristic *characteristic_01;
 @property (nonatomic, strong) CBMutableCharacteristic *characteristic_02;
 @property (nonatomic, strong) NSString *idPeripheral;
+@property (nonatomic, strong) NSMutableArray *centrals;
 
 - (id) initWithDelegate:(id<RMBTPeripheralDelegate>)delegate peripheralId:(NSString*)peripheralId;
 - (void) notifyData:(NSData*)data;

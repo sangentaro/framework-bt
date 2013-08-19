@@ -43,6 +43,10 @@
 		F605FBC417BE9510006350E2 /* RMLog.m in Sources */ = {isa = PBXBuildFile; fileRef = F605FBC317BE9510006350E2 /* RMLog.m */; };
 		F605FBC517BE96E6006350E2 /* RMLog.m in Sources */ = {isa = PBXBuildFile; fileRef = F605FBC317BE9510006350E2 /* RMLog.m */; };
 		F605FBC617BE96FB006350E2 /* RMLog.m in Headers */ = {isa = PBXBuildFile; fileRef = F605FBC317BE9510006350E2 /* RMLog.m */; settings = {ATTRIBUTES = (Private, ); }; };
+		F605FBC917C127F2006350E2 /* NSString+Split.m in Sources */ = {isa = PBXBuildFile; fileRef = F605FBC817C127F2006350E2 /* NSString+Split.m */; };
+		F605FBCA17C12823006350E2 /* NSString+Split.m in Sources */ = {isa = PBXBuildFile; fileRef = F605FBC817C127F2006350E2 /* NSString+Split.m */; };
+		F605FBCB17C1282D006350E2 /* NSString+Split.m in Headers */ = {isa = PBXBuildFile; fileRef = F605FBC817C127F2006350E2 /* NSString+Split.m */; settings = {ATTRIBUTES = (Private, ); }; };
+		F605FBCE17C275CF006350E2 /* DefConst.m in Sources */ = {isa = PBXBuildFile; fileRef = F605FBCD17C275CE006350E2 /* DefConst.m */; };
 		F6989DF117AFE36800213D83 /* RMBTPeripheral.m in Sources */ = {isa = PBXBuildFile; fileRef = F6989DF017AFE36800213D83 /* RMBTPeripheral.m */; };
 		F6989DF217AFE37500213D83 /* RMBTPeripheral.h in Headers */ = {isa = PBXBuildFile; fileRef = F6989DEF17AFE36800213D83 /* RMBTPeripheral.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F6989DF317AFE37A00213D83 /* RMBTPeripheral.m in Sources */ = {isa = PBXBuildFile; fileRef = F6989DF017AFE36800213D83 /* RMBTPeripheral.m */; };
@@ -81,6 +85,10 @@
 		60ED42A7136C6A4900F3D3ED /* BTKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BTKit.h; sourceTree = "<group>"; };
 		F605FBC217BE9510006350E2 /* RMLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RMLog.h; sourceTree = "<group>"; };
 		F605FBC317BE9510006350E2 /* RMLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RMLog.m; sourceTree = "<group>"; };
+		F605FBC717C127F2006350E2 /* NSString+Split.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+Split.h"; sourceTree = "<group>"; };
+		F605FBC817C127F2006350E2 /* NSString+Split.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+Split.m"; sourceTree = "<group>"; };
+		F605FBCC17C275CE006350E2 /* DefConst.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DefConst.h; sourceTree = "<group>"; };
+		F605FBCD17C275CE006350E2 /* DefConst.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DefConst.m; sourceTree = "<group>"; };
 		F6989DEF17AFE36800213D83 /* RMBTPeripheral.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RMBTPeripheral.h; sourceTree = "<group>"; };
 		F6989DF017AFE36800213D83 /* RMBTPeripheral.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RMBTPeripheral.m; sourceTree = "<group>"; };
 		F6989DF417AFE3EA00213D83 /* RMBTCentral.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RMBTCentral.h; sourceTree = "<group>"; };
@@ -216,6 +224,10 @@
 				F6989DF517AFE3EA00213D83 /* RMBTCentral.m */,
 				F605FBC217BE9510006350E2 /* RMLog.h */,
 				F605FBC317BE9510006350E2 /* RMLog.m */,
+				F605FBC717C127F2006350E2 /* NSString+Split.h */,
+				F605FBC817C127F2006350E2 /* NSString+Split.m */,
+				F605FBCC17C275CE006350E2 /* DefConst.h */,
+				F605FBCD17C275CE006350E2 /* DefConst.m */,
 			);
 			path = Source;
 			sourceTree = "<group>";
@@ -231,6 +243,7 @@
 				F6989DF217AFE37500213D83 /* RMBTPeripheral.h in Headers */,
 				F6989DF817AFEA7700213D83 /* RMBTCentral.h in Headers */,
 				F605FBC617BE96FB006350E2 /* RMLog.m in Headers */,
+				F605FBCB17C1282D006350E2 /* NSString+Split.m in Headers */,
 				60EA0ABA13CB206800A0F61F /* FI-Prefix.pch in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -351,6 +364,7 @@
 			files = (
 				F6989DF317AFE37A00213D83 /* RMBTPeripheral.m in Sources */,
 				F6989DF717AFEA7200213D83 /* RMBTCentral.m in Sources */,
+				F605FBCA17C12823006350E2 /* NSString+Split.m in Sources */,
 				F605FBC517BE96E6006350E2 /* RMLog.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -365,6 +379,8 @@
 				F6989DF117AFE36800213D83 /* RMBTPeripheral.m in Sources */,
 				F6989DF617AFE3EA00213D83 /* RMBTCentral.m in Sources */,
 				F605FBC417BE9510006350E2 /* RMLog.m in Sources */,
+				F605FBC917C127F2006350E2 /* NSString+Split.m in Sources */,
+				F605FBCE17C275CF006350E2 /* DefConst.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
