@@ -11,34 +11,31 @@
 #import "DefConst.h"
 #import "NSString+Split.h"
 
-#define SERVICE_UUID1        @"4C4EAD56-3AA2-43A3-B864-4C635573AEB8"
-#define CHARACTERISTIC_UUID1 @"892757EF-D943-43C2-B079-F66442CF069C"
-#define CHARACTERISTIC_UUID2 @"8F455344-490F-4693-A53B-923F2C0EC2E4"
-
-#define NOTIYFY_WAIT 5;
-
 @implementation RMBTPeripheral
 {
+    @protected
     int packetIndex;
+    int ackTimeOut;
     bool notifying;
     NSData *mainData;
     NSString *range;
     NSTimer *aTimer;
 }
 
-@synthesize idPeripheral;
-@synthesize centrals;
-
 #pragma mark life cycle
 - (void) dealloc
 {
     self.delegate = nil;
     
+    [self stopTimer];
+    
     [_pManager release];
     [_service_01 release];
     [_characteristic_01 release];
-    [idPeripheral release];
-    [centrals release];
+    [_centrals release];
+    [_idPeripheral release];
+    [_arrayTargetCentral release];
+    [_notifyResult release];
     
     [super dealloc];
 }
@@ -53,50 +50,125 @@
         self.pManager = [[[CBPeripheralManager alloc]initWithDelegate:self queue:nil]autorelease];
         self.delegate = delegate;
         self.idPeripheral = peripheralId;
-        self.centrals = [NSMutableArray array];
+        self.centrals = [NSMutableDictionary dictionary];
+        self.notifyResult = [NSMutableDictionary dictionary];
         notifying = false;
+        
+        ackTimeOut = 5;
+        
     }
     
     return self;
 }
 
-- (void) notifyData:(NSData*)data
+- (void) setTimeOutToAck:(int)timeout
+{
+    ackTimeOut = timeout;
+}
+
+- (void) sendMesasgeToAllCentral:(NSData*) data
+{
+    [self sendMessageTo:nil message:data];
+}
+
+- (void) sendMessageTo:(NSString*)centralId message:(NSData*) data;
+{
+    [self sendMessageTo:centralId message:data withTimer:true];
+}
+
+- (void) setAcknowledgeTimeout:(int) timeOut
+{
+    ackTimeOut = timeOut;
+}
+
+- (NSString *) getIdOfPeripheral
+{
+    return _idPeripheral;
+}
+
+- (NSArray *) getListOfCentrals
+{
+    if([_centrals count] > 0){
+        NSMutableArray *array = [NSMutableArray array];
+        for (NSString* key in _centrals) {
+            [array addObject:key];
+        }
+        return (NSMutableArray*)array;
+    }else{
+        return nil;
+    }
+}
+
+# pragma mark private method
+- (void) sendMessageTo:(NSString*)centralId message:(NSData*) data withTimer:(BOOL)withTimer;
 {
     
-    if(!notifying){
+    // update notify result
+    [_notifyResult removeAllObjects];
     
-        NSString *str= [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]autorelease];
+    // if sending message to all centrals, centralId should be nil
+    if(centralId != nil){
         
-        int index = 0;
-        NSString *result = @"";
-        NSArray *strArray = [str splitCharacterEvery:17];
-        for (NSString *splitedString in strArray) {
-            result = [NSString stringWithFormat:@"%@%@%@",result, [NSString stringWithFormat:@"%02d:", index], splitedString];
-            if(index < 100){
-                index ++;
-            }else{
-                index = 0;
+        // Set target central to check acknowledgement
+        [_notifyResult setObject:@"NO" forKey:centralId];
+        CBCentral *targetCentral = [_centrals objectForKey:centralId];
+        
+        _arrayTargetCentral = [NSArray arrayWithObjects:targetCentral, nil];
+        
+    }else{
+        
+        // Set target centrals to check acknowledgement
+        NSArray *centralIds = [self getListOfCentrals];
+        if(centralIds != nil){
+            for(NSString *centralId in centralIds){
+                [_notifyResult setObject:@"NO" forKey:centralId];
             }
         }
+        _arrayTargetCentral = nil;
+    }
+    
+    if(!notifying){
         
-        mainData = [result dataUsingEncoding:NSUTF8StringEncoding];
+        mainData = [self prepareDataForNotify:data];
+        
         [self notifyingData];
-        
         notifying = true;
         
+        if(withTimer){
+            [self startTimer];
+        }
     }
-        
 }
 
 # pragma mark helper for notifyData
+- (NSData*) prepareDataForNotify:(NSData*)data
+{
+    
+    NSString *str= [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]autorelease];
+    
+    int index = 0;
+    NSString *result = @"";
+    NSArray *strArray = [str splitCharacterEvery:17];
+    for (NSString *splitedString in strArray) {
+        result = [NSString stringWithFormat:@"%@%@%@",result, [NSString stringWithFormat:@"%02d:", index], splitedString];
+        if(index < 100){
+            index ++;
+        }else{
+            index = 0;
+        }
+    }
+    
+    return [result dataUsingEncoding:NSUTF8StringEncoding];
+}
+
 - (void) notifyingData
 {
     
     while ([self hasData]) {
-        if([self.pManager updateValue:[self getNextData] forCharacteristic:self.characteristic_01 onSubscribedCentrals:nil]){
+        if([self.pManager updateValue:[self getNextData] forCharacteristic:self.characteristic_01 onSubscribedCentrals:_arrayTargetCentral]){
             [self ridData];
         }else{
-            [self logCat:@"No Data to send"];
+            [self logCat:@"sending data"];
             return;
         }
     }
@@ -111,7 +183,7 @@
 
 - (BOOL)hasData
 {
-    if ([mainData length]>0) {        
+    if ([mainData length]>0) {
         return YES;
     }else{
         range = nil;
@@ -134,7 +206,7 @@
     }
 }
 
-- (NSData *)getNextData
+- (NSData *) getNextData
 {
     NSData *data;
     if ([mainData length]>19) {
@@ -149,6 +221,31 @@
     return data;
 }
 
+- (BOOL) isReceivedAckFromAll
+{
+    BOOL ackStatus = YES;
+    for (NSString* key in _notifyResult) {
+        NSString *ackResult = [_notifyResult objectForKey:key];
+        if([ackResult isEqualToString:@"NO"]){
+            ackStatus =NO;
+        }
+    }
+    return ackStatus;
+}
+
+- (NSArray*) centralsWithoutAck
+{
+    NSMutableArray *centralsWithoutAck = [NSMutableArray array];
+    for (NSString* key in _notifyResult) {
+        NSString *ackResult = [_notifyResult objectForKey:key];
+        if([ackResult isEqualToString:@"NO"]){
+            [centralsWithoutAck addObject:key];
+        }
+    }
+    return centralsWithoutAck;
+}
+
+# pragma mark CBPeripheral manager initialize
 - (void) initManager
 {
     // Create service
@@ -218,19 +315,41 @@
     [self logCat:receivedString];
     
     NSString *prefix = [receivedString substringToIndex:3];
+    NSString *idString = [receivedString substringFromIndex:3];
+    CBATTRequest *request = requests[0];
+    CBCentral *central = request.central;
     
+    // Case for Acknowledgement recieve
     if([prefix isEqualToString:AK]){
         if(notifying){
-            //TODO: Implement operation for the case connected to multiple centrals
-            [self logCat:@"notify acknowledged"];
-            notifying = false;
+            
+            [self logCat:[NSString stringWithFormat:@"notify from %@ acknowledged", idString]];
+            
+            //check if key with idString wxists
+            if ([[_notifyResult allKeys] containsObject:idString]) {
+                [_notifyResult setObject:@"YES" forKey:idString];
+            }else{
+                // target central id is not in the target list
+                [self stopTimer];
+                notifying = false;
+                [self logCat:@"targe key not found on the list"];
+            }
+            
+            //Received acks from all of target device
+            if([self isReceivedAckFromAll]){
+                [self stopTimer];
+                notifying = false;
+                [self logCat:@"acks from all of the devices are received"];
+            }
+            
         }
         
+    // Case for to connected to central
     }else if([prefix isEqualToString:ID]){
     
-        NSString *idString = [receivedString substringFromIndex:3];
-        [centrals addObject:idString];
-        [self logCat:@"id:%@ is added", idString];
+        [_centrals setObject:central forKey:idString];
+        [_delegate peripheralIsConnected:idString];
+        [self logCat:[NSString stringWithFormat:@"%@ is Added", idString]];
     
     }else if([prefix isEqualToString:AN]){
         
@@ -243,7 +362,7 @@
     if (aTimer) {
         [self stopTimer];
     }
-    aTimer = [NSTimer scheduledTimerWithTimeInterval:5
+    aTimer = [NSTimer scheduledTimerWithTimeInterval:ackTimeOut
                                               target:self
                                             selector:@selector(tick:)
                                             userInfo:nil
@@ -258,11 +377,28 @@
 
 -(void)tick:(NSTimer*)theTimer
 {
-    //TODO implement for the case when connected to multiple centrals
-    [_delegate ackNotReceived];
-    [self logCat:@"ack not received"];
+    
+    if([[self getListOfCentrals]count] == 0){
+        [self logCat:@"no centrals to send data"];
+    }else if([self isReceivedAckFromAll]){
+        [self logCat:@"acks from all of the devices are received"];
+    }else{
+        for(NSString *centralWithoutAck in [self centralsWithoutAck]){
+            
+            //Send disconnect message
+            [self sendMessageTo:centralWithoutAck message:[NSString stringWithFormat:@"%@", DC] withTimer:NO];
+            
+            //Remove central from list
+            [_centrals removeObjectForKey:centralWithoutAck];
+            
+            [self logCat:[NSString stringWithFormat:@"%@ is disconnected", centralWithoutAck]];
+            
+        }
+    }
     notifying = false;
+    [self stopTimer];
 }
+
 
 #pragma mark for development
 - (void) logCat:(NSString*)logText

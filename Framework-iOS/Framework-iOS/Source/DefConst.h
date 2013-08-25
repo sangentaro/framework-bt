@@ -8,11 +8,19 @@
 
 #import <Foundation/Foundation.h>
 
-// prefix for data transfer
+#define SERVICE_UUID1        @"4C4EAD56-3AA2-43A3-B864-4C635573AEB8"
+#define CHARACTERISTIC_UUID1 @"892757EF-D943-43C2-B079-F66442CF069C"
+#define CHARACTERISTIC_UUID2 @"8F455344-490F-4693-A53B-923F2C0EC2E4"
+
+// prefix for data transfer from central to peripheral
 #define AK @"AK:" //Ack to notify
 #define ID @"ID:" //Send id to peripheral
 #define AN @"AN:" //Any data
 
+// prefix for data transfer from peripheral to central
+#define DC @"DC:" //Ask disconnect to central
+
+// notify data tag
 #define NOTIFY_END_TAG       @"::ned"
 
 @interface DefConst : NSObject
