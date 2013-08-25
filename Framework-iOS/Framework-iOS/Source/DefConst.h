@@ -19,6 +19,7 @@
 
 // prefix for data transfer from peripheral to central
 #define DC @"DC:" //Ask disconnect to central
+#define WA @"WA:" //Ack to write from central to peripheral
 
 // notify data tag
 #define NOTIFY_END_TAG       @"::ned"

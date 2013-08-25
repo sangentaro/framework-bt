@@ -16,7 +16,9 @@
     NSString *notifyResult;
     NSTimer *aTimer;
     int notifyReceiveIndex;
+    int ackTimeOut;
     bool isReceiveError;
+    bool isWriting;
 }
 
 @synthesize idCentral;
@@ -37,7 +39,6 @@
 #pragma mark public methods
 - (id) initWithDelegate:(id<RMBTCentralDelegate>)delegate centralId:(NSString*)centralId
 {
-    
     self = [super init];
     if(self){
         //TODO: queus = nil means this runs on main thread. specify other if needed
@@ -45,8 +46,21 @@
         self.delegate = delegate;
         self.idCentral = centralId;
         self.peripherals = [NSMutableArray array];
+        
+        isWriting = false;
+        ackTimeOut = 5;
     }
     return self;
+}
+
+- (void) setTimeOutToAck:(int)timeout
+{
+    ackTimeOut = timeout;
+}
+
+- (void) writeDataToPeriperal:(NSData*)data
+{
+    [self writeDataToPeriperal:data withPrefixOf:AN withAck:YES];
 }
 
 - (void) connectToPeripheral:(int)index
@@ -61,37 +75,18 @@
     [self.cManager connectPeripheral:self.peripheral options:nil];
 }
 
-- (void) writeDataToPeriperal:(NSData*)data
+- (void) disconnectFromPeripheral
 {
-    [self writeDataToPeriperal:data withPrefixOf:AN];
-}
-
-#pragma mark internal methods
-- (void) writeDataToPeriperal:(NSData*)data withPrefixOf:(NSString*)prefix
-{
-    if(self.characteristic != NULL){
-        
-        NSString *str= [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]autorelease];
-        NSString *result = [NSString stringWithFormat:@"%@>%@", prefix, str];
-        NSData *resultData = [result dataUsingEncoding:NSUTF8StringEncoding];
-        
-        [self.peripheral writeValue:resultData forCharacteristic:self.characteristic type:CBCharacteristicWriteWithResponse];
-        [self logCat:@"Write value to peripheral"];
+    if(self.peripheral != nil){
+        [self.cManager cancelPeripheralConnection:self.peripheral];
+        self.peripheral = nil;
     }
 }
 
-- (void) sendAckToNotify
+- (NSArray*) getListOfPeripheralsFound
 {
-    NSData *data = [idCentral dataUsingEncoding:NSUTF8StringEncoding];
-    [self writeDataToPeriperal:data withPrefixOf:AK];
+    return peripherals;
 }
-
-- (void) sendIdToPeripheral
-{
-    NSData *data = [idCentral dataUsingEncoding:NSUTF8StringEncoding];
-    [self writeDataToPeriperal:data withPrefixOf:ID];
-}
-
 
 - (void) startScan
 {
@@ -104,7 +99,69 @@
                                                         forKey:CBCentralManagerScanOptionAllowDuplicatesKey];
 #endif
     [self.cManager scanForPeripheralsWithServices:[NSArray arrayWithObjects:[CBUUID UUIDWithString:SERVICE_UUID1], nil] options:options];
+}
+
+- (void) stopScan
+{
+    [self.cManager stopScan];
+}
+
+#pragma mark internal methods
+- (void) writeDataToPeriperal:(NSData*)data withPrefixOf:(NSString*)prefix withAck:(BOOL)withAck
+{
+    if(self.characteristic != NULL){
+        
+        if(!isWriting){
+        
+            NSString *str= [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]autorelease];
+            NSString *result = [NSString stringWithFormat:@"%@>%@", prefix, str];
+            NSData *resultData = [result dataUsingEncoding:NSUTF8StringEncoding];
+            
+            [self.peripheral writeValue:resultData forCharacteristic:self.characteristic type:CBCharacteristicWriteWithResponse];
+            [self logCat:@"Write value to peripheral"];
+         
+            isWriting = false;
+            
+            if(withAck){
+                [self startTimer];
+            }
+            
+        }
+        
+    }
+}
+
+- (void) sendAckToNotify
+{
+    NSData *data = [idCentral dataUsingEncoding:NSUTF8StringEncoding];
+    [self writeDataToPeriperal:data withPrefixOf:AK withAck:NO];
+}
+
+- (void) sendIdToPeripheral
+{
+    NSData *data = [idCentral dataUsingEncoding:NSUTF8StringEncoding];
+    [self writeDataToPeriperal:data withPrefixOf:ID withAck:YES];
+}
+
+- (void) receivedNotification:(NSString*)strReceived
+{
+    if([strReceived hasPrefix:DC]){
+        
+        [self disconnectFromPeripheral];
+        [_delegate disconnectedFromPeripheral];
+        
+    }else if([strReceived hasPrefix:WA]){
+        
+        [self logCat:@"ackReceived"];
+        [self stopTimer];
+        isWriting = false;
     
+    }else {
+        
+        [self sendAckToNotify];
+    
+    }
+
 }
 
 #pragma mark CBCentralManager delegate
@@ -133,9 +190,6 @@
         // serviceUUIDs has UUID that service advertizes
         NSString *log = [[[NSString alloc]initWithFormat:@"CENTRAL: iOS in foreground discovered:%@, peripheral.UUID:%@, localName:%@", advertisementData, peripheral.UUID, localName]autorelease];
         [self logCat:log];
-        
-//        // stop scan
-//        [self.cManager stopScan];
         
         [peripherals addObject:peripheral];
         [_delegate peripheralFound];
@@ -233,7 +287,7 @@
             [self logCat:@"error while receiving notifycation"];
         }else{
             [self logCat:notifyResult];
-            [self sendAckToNotify];
+            [self receivedNotification:notifyResult];
         }
         notifyResult = nil;
         notifyReceiveIndex = 0;
@@ -258,11 +312,11 @@
     if (aTimer) {
         [self stopTimer];
     }
-    aTimer = [NSTimer scheduledTimerWithTimeInterval:TIME_INTERVAL
+    aTimer = [NSTimer scheduledTimerWithTimeInterval:ackTimeOut
                                               target:self
                                             selector:@selector(tick:)
                                             userInfo:nil
-                                            repeats:NO];
+                                             repeats:NO];
 }
 
 -(void)stopTimer
@@ -273,8 +327,11 @@
 
 -(void)tick:(NSTimer*)theTimer
 {
-    [_delegate cannotFindServiceError];
+    [self disconnectFromPeripheral];
+    [self logCat:@"ack not received. disconnect from peripheral"];
+    isWriting = false;
 }
+
 
 #pragma mark for development
 - (void) logCat:(NSString*)logText
