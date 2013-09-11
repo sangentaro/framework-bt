@@ -114,7 +114,7 @@
         if(!isWriting){
         
             NSString *str= [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]autorelease];
-            NSString *result = [NSString stringWithFormat:@"%@>%@", prefix, str];
+            NSString *result = [NSString stringWithFormat:@"%@>%@&%@", prefix, str, idCentral];
             NSData *resultData = [result dataUsingEncoding:NSUTF8StringEncoding];
             
             [self.peripheral writeValue:resultData forCharacteristic:self.characteristic type:CBCharacteristicWriteWithResponse];
@@ -155,7 +155,8 @@
         [self logCat:@"ackReceived"];
         [self stopTimer];
         isWriting = false;
-    
+        [self sendAckToNotify];
+        
     }else {
         
         [self sendAckToNotify];

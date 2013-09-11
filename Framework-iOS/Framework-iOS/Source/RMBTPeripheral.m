@@ -140,6 +140,36 @@
     }
 }
 
+- (NSString*) getIdFromReceivedString:(NSString*)receivedString
+{
+    NSRange found = [receivedString rangeOfString:@"&" options:NSLiteralSearch];
+    if (found.location != NSNotFound)
+    {
+        NSString *targetString = [receivedString substringFromIndex:found.location + found.length];
+        return targetString;
+    }else{
+        return NULL;
+    }    
+}
+
+- (NSString*) getDataFromReceivedString:(NSString*)receivedString
+{
+    NSRange found = [receivedString rangeOfString:@">" options:NSLiteralSearch];
+    if (found.location != NSNotFound)
+    {
+        NSString *targetString = [receivedString substringFromIndex:found.location + found.length];
+        NSRange found2 = [targetString rangeOfString:@"&" options:NSLiteralSearch];
+        if (found2.location != NSNotFound) {
+            NSString *targetString2 = [targetString substringToIndex:found2.location];
+            return targetString2;
+        }else{
+            return NULL;
+        }
+    }else{
+        return NULL;
+    }
+}
+
 # pragma mark helper for notifyData
 - (NSData*) prepareDataForNotify:(NSData*)data
 {
@@ -312,12 +342,13 @@
         [peripheral respondToRequest:aReq withResult:CBATTErrorSuccess];
     }
     
-    [self logCat:receivedString];
-    
     NSString *prefix = [receivedString substringToIndex:3];
-    NSString *idString = [receivedString substringFromIndex:3];
+    NSString *idString = [self getIdFromReceivedString:receivedString];
+    NSString *data = [self getDataFromReceivedString:receivedString];
     CBATTRequest *request = requests[0];
     CBCentral *central = request.central;
+    
+    [self logCat:data];
     
     // Case for Acknowledgement recieve
     if([prefix isEqualToString:AK]){
@@ -325,14 +356,14 @@
             
             [self logCat:[NSString stringWithFormat:@"notify from %@ acknowledged", idString]];
             
-            //check if key with idString wxists
+            //check if key with idString exists
             if ([[_notifyResult allKeys] containsObject:idString]) {
                 [_notifyResult setObject:@"YES" forKey:idString];
             }else{
                 // target central id is not in the target list
                 [self stopTimer];
                 notifying = false;
-                [self logCat:@"targe key not found on the list"];
+                [self logCat:@"target key not found on the list"];
             }
             
             //Received acks from all of target device
@@ -350,13 +381,12 @@
         [_centrals setObject:central forKey:idString];
         [_delegate peripheralIsConnected:idString];
         [self logCat:[NSString stringWithFormat:@"%@ is Added", idString]];
-    
+            
     }else if([prefix isEqualToString:AN]){
         
     }
     
     if(![prefix isEqualToString:AK]){
-        
         [self sendMessageTo:idString message:[WA dataUsingEncoding:NSUTF8StringEncoding]];
     }
     
@@ -398,7 +428,7 @@
             [_centrals removeObjectForKey:centralWithoutAck];
             
             [self logCat:[NSString stringWithFormat:@"%@ is disconnected", centralWithoutAck]];
-            
+
         }
     }
     notifying = false;
