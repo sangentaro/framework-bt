@@ -196,7 +196,7 @@
         [_delegate peripheralFound];
         
         //TODO: update this line
-        [self connectToPeripheral:0];
+        //[self connectToPeripheral:0];
         
     }else{
         NSString *log = [[[NSString alloc]initWithFormat:@"CENTRAL: unknown service found %@", advertisementData]autorelease];
