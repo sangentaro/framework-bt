@@ -385,7 +385,7 @@
     }else if([prefix isEqualToString:AN]){
         
     }
-    
+
     if(![prefix isEqualToString:AK]){
         [self sendMessageTo:idString message:[WA dataUsingEncoding:NSUTF8StringEncoding]];
     }

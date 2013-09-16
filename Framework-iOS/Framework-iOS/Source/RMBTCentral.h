@@ -13,9 +13,9 @@
 @required
 - (void) centralError:(NSString*)errorMsg;
 - (void) cannotFindServiceError;
-- (void) peripheralFound;
-- (void) receivedDataFromPeripheral:(NSString*)strSdata;
-- (void) disconnectedFromPeripheral;
+- (void) centralFoundPeripheral;
+- (void) centralReceivedDataFromPeripheral:(NSString*)strSdata;
+- (void) centralDisconnectedFromPeripheral;
 @optional
 - (void) logCentral:(NSString*)logText;
 @end

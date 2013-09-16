@@ -85,7 +85,13 @@
 
 - (NSArray*) getListOfPeripheralsFound
 {
-    return peripherals;
+    NSMutableArray *result = [NSMutableArray array];
+    for (CBPeripheral *peripheral in peripherals){
+        if (peripheral.name != nil){
+            [result addObject:peripheral.name];
+        }
+    }
+    return result;
 }
 
 - (void) startScan
@@ -148,9 +154,11 @@
     if([strReceived hasPrefix:DC]){
         
         [self disconnectFromPeripheral];
-        [_delegate disconnectedFromPeripheral];
+        [_delegate centralDisconnectedFromPeripheral];
         
     }else if([strReceived hasPrefix:WA]){
+        
+        [_delegate centralReceivedDataFromPeripheral:strReceived];
         
         [self logCat:@"ackReceived"];
         [self stopTimer];
@@ -192,8 +200,8 @@
         NSString *log = [[[NSString alloc]initWithFormat:@"CENTRAL: iOS in foreground discovered:%@, peripheral.UUID:%@, localName:%@", advertisementData, peripheral.UUID, localName]autorelease];
         [self logCat:log];
         
-        [peripherals addObject:peripheral];
-        [_delegate peripheralFound];
+        [peripherals ƒ√addObject:peripheral];
+        [_delegate centralFounƒdPeripheral];
         
         //TODO: update this line
         //[self connectToPeripheral:0];
