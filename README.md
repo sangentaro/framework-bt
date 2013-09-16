@@ -4,25 +4,62 @@ framework-bt
 framework-bt
 
 ##TODO:
-* Centralの開始と終了を明示的に行えるようにする
-* Peripheralが特定Centralと接続を継続しているかをPollingによって定期的に確認する
 * Threading modelを考える
-
-##BUG:
 
 ##BUG FIX:
 * Central 側で Peripheral が見つかっても、didConnectService が呼ばれない事がある
     * タイマーでタイムアウトで error を delegate する
     * Apple 側のバグ（のよう）で、iOS の BT を on -> off する必要がある
 
-##Public APIs
-```html
-- (id) initWithDelegate:(id<RMBTPeripheralDelegate>)delegate peripheralId:(NSString*)peripheralId;
+##Project Structure
+```
+├── Framework-iOS
+│   ├── Framework-iOS
+│   │   ├── Source
+│   │   │   ├── BTKit.h
+│   │   │   ├── DefConst.h
+│   │   │   ├── DefConst.m
+│   │   │   ├── NSString+Split.h
+│   │   │   ├── NSString+Split.m
+│   │   │   ├── RMBTCentral.h
+│   │   │   ├── RMBTCentral.m
+│   │   │   ├── RMBTPeripheral.h
+│   │   │   ├── RMBTPeripheral.m
+│   │   │   ├── RMLog.h
+│   │   │   └── RMLog.m
+│   │   └── Support\ Files
+│   ├── Framework-iOS\ APP
+│   │   ├── Icons
+│   │   ├── Source
+│   │   │   ├── Framework_iOSAppDelegate.h
+│   │   │   ├── Framework_iOSAppDelegate.m
+│   │   │   ├── Framework_iOSViewController.h
+│   │   │   └── Framework_iOSViewController.m
+│   │   ├── Support\ Files
+│   │   └── en.lproj
+│   ├── Framework-iOS.xcodeproj
+|   └── Products
+├── README.md
+└── docs
+    └── html
+        ├── Classes
+        ├── css
+        ├── hierarchy.html
+        ├── img
+        └── index.html      <-- Document root
 ```
 
+##Documents
+```
+appledoc --project-name AppledocSample --project-company Classmethod --create-html --no-create-docset --output ./docs/ .
+```
 
+で`docs`フォルダ以下にドキュメントを生成する
 
-##Other Information
+##Usage Information
+###RMBTPeripheral
+RMBTPeripheralはCoreBTでPeripheral側となるクラス。PeripheralはServer / ClinetモデルにおけるServerを指す。
+
 ###RMBTCentral
 RMBTCentralはCoreBTでCentral側となるクラス。CentralはServer / ClientモデルにおけるClientを指す。
 
