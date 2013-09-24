@@ -11,14 +11,14 @@
 
 @protocol RMBTPeripheralDelegate
 @required
-- (void) peripheralIsConnected:(NSString*)idCentral;
+- (void) peripheralConnectedWithCentrals:(NSArray*)idCentrals;
 - (void) peripheralIsDisconnected:(NSString*)idCentral;
 @optional
 - (void) logPeripheral:(NSString*)logText;
 @end
 
 /**
- * Bluetooth peripheral management class
+ * Bluetooth peripheral managemen t class
  *
  */
 @interface RMBTPeripheral : NSObject<CBPeripheralManagerDelegate>

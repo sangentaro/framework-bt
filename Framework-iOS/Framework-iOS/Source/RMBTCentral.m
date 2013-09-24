@@ -200,8 +200,8 @@
         NSString *log = [[[NSString alloc]initWithFormat:@"CENTRAL: iOS in foreground discovered:%@, peripheral.UUID:%@, localName:%@", advertisementData, peripheral.UUID, localName]autorelease];
         [self logCat:log];
         
-        [peripherals ƒ√addObject:peripheral];
-        [_delegate centralFounƒdPeripheral];
+        [peripherals addObject:peripheral];
+        [_delegate centralFoundPeripheral];
         
         //TODO: update this line
         //[self connectToPeripheral:0];

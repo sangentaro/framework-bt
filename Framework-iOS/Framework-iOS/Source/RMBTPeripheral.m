@@ -289,7 +289,6 @@
                                                                     value:nil
                                                               permissions:CBAttributePermissionsReadable]autorelease];
     
-    // Create characteristic implemented in the service
     CBUUID *characteristic_uuid2 = [CBUUID UUIDWithString:CHARACTERISTIC_UUID2];
     self.characteristic_02 = [[[CBMutableCharacteristic alloc]initWithType:characteristic_uuid2
                                                                 properties:CBCharacteristicPropertyWrite
@@ -379,7 +378,7 @@
     }else if([prefix isEqualToString:ID]){
     
         [_centrals setObject:central forKey:idString];
-        [_delegate peripheralIsConnected:idString];
+        [_delegate peripheralConnectedWithCentrals:[self getListOfCentrals]];
         [self logCat:[NSString stringWithFormat:@"%@ is Added", idString]];
             
     }else if([prefix isEqualToString:AN]){
@@ -422,7 +421,8 @@
         for(NSString *centralWithoutAck in [self centralsWithoutAck]){
             
             //Send disconnect message
-            [self sendMessageTo:centralWithoutAck message:[NSString stringWithFormat:@"%@", DC] withTimer:NO];
+            NSData *message = [[NSString stringWithFormat:@"%@", DC] dataUsingEncoding:NSUTF8StringEncoding];
+            [self sendMessageTo:centralWithoutAck message:message withTimer:NO];
             
             //Remove central from list
             [_centrals removeObjectForKey:centralWithoutAck];
