@@ -34,7 +34,6 @@
     [_characteristic_01 release];
     [_centrals release];
     [_idPeripheral release];
-    [_arrayTargetCentral release];
     [_notifyResult release];
     
     [super dealloc];
@@ -383,6 +382,9 @@
             
     }else if([prefix isEqualToString:AN]){
         
+    }else if([prefix isEqualToString:CD]){
+        [_centrals removeObjectForKey:idString];
+        [_delegate peripheralIsDisconnected:idString];
     }
 
     if(![prefix isEqualToString:AK]){

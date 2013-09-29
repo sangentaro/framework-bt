@@ -77,6 +77,10 @@
 
 - (void) disconnectFromPeripheral
 {
+    // Let peripheral know disconnection
+    NSData *data = [idCentral dataUsingEncoding:NSUTF8StringEncoding];
+    [self writeDataToPeriperal:data withPrefixOf:CD withAck:NO];
+    
     if(self.peripheral != nil){
         [self.cManager cancelPeripheralConnection:self.peripheral];
         self.peripheral = nil;
@@ -312,6 +316,12 @@
     if(error != NULL){
         [_delegate centralError:[NSString stringWithFormat:@"%@", error]];
     }
+}
+
+- (void) peripheral:(CBPeripheral *)peripheral didModifyServices:(NSArray *)invalidatedServices
+{
+    [_delegate centralDisconnectedFromPeripheral];
+    
 }
 
 #pragma mark timer

@@ -16,6 +16,7 @@
 #define AK @"AK:" //Ack to notify
 #define ID @"ID:" //Send id to peripheral
 #define AN @"AN:" //Any data
+#define CD @"CD:" //Central disconnect
 
 // prefix for data transfer from peripheral to central
 #define DC @"DC:" //Ask disconnect to central
