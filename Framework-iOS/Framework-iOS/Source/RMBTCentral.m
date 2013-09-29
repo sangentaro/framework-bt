@@ -171,6 +171,7 @@
         
     }else {
         
+        [_delegate centralReceivedDataFromPeripheral:strReceived];
         [self sendAckToNotify];
     
     }
