@@ -13,6 +13,7 @@
 @required
 - (void) peripheralConnectedWithCentrals:(NSArray*)idCentrals;
 - (void) peripheralIsDisconnected:(NSString*)idCentral;
+- (void) peripheralReceivedDataFromCentral:(NSString*)idString withData:(NSString*)data;
 @optional
 - (void) logPeripheral:(NSString*)logText;
 @end

@@ -381,7 +381,7 @@
         [self logCat:[NSString stringWithFormat:@"%@ is Added", idString]];
             
     }else if([prefix isEqualToString:AN]){
-        
+        [_delegate peripheralReceivedDataFromCentral:idString withData:data];
     }else if([prefix isEqualToString:CD]){
         [_centrals removeObjectForKey:idString];
         [_delegate peripheralIsDisconnected:idString];
